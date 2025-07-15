@@ -1,15 +1,17 @@
 package io.spring.training.boot.kafkatraining.internal.socket;
 
 import io.spring.training.boot.kafkatraining.internal.DataProcessor;
+import io.spring.training.boot.kafkatraining.internal.header.HeaderModel;
 import io.spring.training.boot.kafkatraining.internal.socket.config.SocketSettings;
 import io.spring.training.boot.kafkatraining.internal.utils.ByteConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.DataInputStream;
-import java.io.IOException;
+import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 
 public class ServerSocketImpl extends ServerSocket implements io.spring.training.boot.kafkatraining.internal.socket.ServerSocket {
     private static final Logger logger = LoggerFactory.getLogger(ServerSocketImpl.class);
@@ -60,7 +62,19 @@ public class ServerSocketImpl extends ServerSocket implements io.spring.training
                             clientSocket.getRemoteSocketAddress(),
                             ByteConverter.toMB(clientSocket.getReceiveBufferSize()));
 
-                    new DataProcessor().parseInputData(dis);
+                    HeaderModel h = new DataProcessor().parseInputData(dis);
+
+                    int correlationId = h.correlationId();
+
+                    byte[] buf = ByteBuffer
+                            .allocate(4)
+                            .order(ByteOrder.BIG_ENDIAN)    // network order
+                            .putInt(correlationId)
+                            .array();
+
+                    try (BufferedOutputStream out = new BufferedOutputStream(clientSocket.getOutputStream())) {
+                        out.write(buf);
+                    }
 
                 } catch (IOException e) {
                     if (running) {

@@ -1,5 +1,7 @@
 package io.spring.training.boot.kafkatraining.internal;
 
+import io.spring.training.boot.kafkatraining.internal.header.Header;
+import io.spring.training.boot.kafkatraining.internal.header.HeaderModel;
 import org.springframework.stereotype.Service;
 
 import java.io.DataInputStream;
@@ -8,10 +10,10 @@ import java.io.DataInputStream;
 public class DataProcessor {
     public DataProcessor() {}
 
-    public void parseInputData(DataInputStream raw) {
+    public HeaderModel parseInputData(DataInputStream raw) {
 
         Header h = new Header(raw);
-        h.parse();
+        return h.parse();
 
 
 
