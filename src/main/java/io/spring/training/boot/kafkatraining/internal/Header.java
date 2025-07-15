@@ -1,4 +1,4 @@
-package io.spring.training.boot.kafkatraining.internal.socket;
+package io.spring.training.boot.kafkatraining.internal;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

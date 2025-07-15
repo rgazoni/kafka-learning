@@ -1,13 +1,12 @@
-package io.spring.training.boot.kafkatraining.internal.socket;
+package io.spring.training.boot.kafkatraining.internal;
 
 import org.springframework.stereotype.Service;
 
 import java.io.DataInputStream;
-import java.io.InputStream;
 
 @Service
-public class SocketDataProcessor {
-    public SocketDataProcessor() {}
+public class DataProcessor {
+    public DataProcessor() {}
 
     public void parseInputData(DataInputStream raw) {
 
