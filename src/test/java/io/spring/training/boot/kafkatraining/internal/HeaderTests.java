@@ -7,26 +7,24 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
-import java.io.IOException;
 
 @EnableAutoConfiguration
 @SpringBootTest
 public class HeaderTests {
 
 
+    // echo -ne '\x00\x00\x00\x04\x00\x00\x00\x07\x00\x17\x00\x02\x00\x08\x00\x0A' | nc 127.0.0.1 9092 | hexdump -C
     @Test
-    public void parsingHeader() throws IOException {
+    public void parsingHeader() {
         int expectedCorrelationId = 7;
 
         byte[] b = {0, 0, 0, 4, 0, 0, 0, 7};
         DataInputStream dis = new DataInputStream(new ByteArrayInputStream(b));
 
-        Header h = new Header(dis);
-        HeaderModel hm = h.parse();
+        HeaderModel hm = Header.getInstance().parse(dis);
 
         assertEquals(expectedCorrelationId, hm.correlationId());
     }

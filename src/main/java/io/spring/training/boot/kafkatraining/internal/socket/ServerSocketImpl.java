@@ -13,14 +13,18 @@ import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
+// His bean definition is presented on Main Config File: KafkaTrainingApplication
 public class ServerSocketImpl extends ServerSocket implements io.spring.training.boot.kafkatraining.internal.socket.ServerSocket {
     private static final Logger logger = LoggerFactory.getLogger(ServerSocketImpl.class);
     private final SocketSettings settings;
     private Socket clientSocket = null;
     private ServerSocket serverSocket = null;
 
-    public ServerSocketImpl(SocketSettings settings) throws IOException {
+    private final DataProcessor dataProcessor;
+
+    public ServerSocketImpl(SocketSettings settings, DataProcessor dataProcessor) throws IOException {
         this.settings = settings;
+        this.dataProcessor = dataProcessor;
     }
 
     public void start(){
@@ -62,7 +66,7 @@ public class ServerSocketImpl extends ServerSocket implements io.spring.training
                             clientSocket.getRemoteSocketAddress(),
                             ByteConverter.toMB(clientSocket.getReceiveBufferSize()));
 
-                    HeaderModel h = new DataProcessor().parseInputData(dis);
+                    HeaderModel h = this.dataProcessor.parseInputData(dis);
 
                     byte[] buf = ByteBuffer
                             .allocate(8)

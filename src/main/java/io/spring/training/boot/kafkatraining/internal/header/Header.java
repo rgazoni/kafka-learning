@@ -4,6 +4,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
 
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -13,7 +14,7 @@ public class Header {
     @Getter(AccessLevel.NONE)
     private static final Logger logger = LoggerFactory.getLogger(Header.class);
     @Getter(AccessLevel.NONE)
-    private DataInputStream raw = null;
+    private static Header instance;
 
     // 32-bit signed
     private int messageSize;
@@ -28,14 +29,20 @@ public class Header {
     // Compact-array
     private String[] TAG_ARRAY;
 
-    public Header(DataInputStream raw) {
-        this.raw = raw;
+    private Header() {
         this.messageSize = 0;
         this.correlationId = 0;
         this.clientId = "";
         this.requestApiKey = 0;
         this.requestApiVersion = 0;
         this.TAG_ARRAY = new String[]{};
+    }
+
+    public static Header getInstance() {
+        if (instance == null) {
+            instance = new Header();
+        }
+        return instance;
     }
 
     /**
@@ -46,21 +53,21 @@ public class Header {
      * client_id - NULLABLE_STRING - The client ID for the request
      * TAG_BUFFER - COMPACT_ARRAY - Optional tagged fields
      */
-    public HeaderModel parse() {
+    public HeaderModel parse(DataInputStream raw) {
         try {
             logger.info("invoking method parse() from Header class");
 
             // Accessing message size
-            messageSize = this.raw.readInt();
+            messageSize = raw.readInt();
             logger.info("message_size content is of {}", messageSize);
 
-            requestApiKey = this.raw.readShort();
+            requestApiKey = raw.readShort();
             logger.info("request_api_key is of {}", requestApiKey);
 
-            requestApiVersion = this.raw.readShort();
+            requestApiVersion = raw.readShort();
             logger.info("request_api_version is of {}", requestApiVersion);
 
-            correlationId = this.raw.readInt();
+            correlationId = raw.readInt();
             logger.info("correlation_id content is of {}", correlationId);
 
             return HeaderModel.builder()

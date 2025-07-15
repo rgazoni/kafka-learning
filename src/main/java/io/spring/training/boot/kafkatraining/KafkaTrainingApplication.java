@@ -1,5 +1,6 @@
 package io.spring.training.boot.kafkatraining;
 
+import io.spring.training.boot.kafkatraining.internal.DataProcessor;
 import io.spring.training.boot.kafkatraining.internal.socket.ServerSocketImpl;
 import io.spring.training.boot.kafkatraining.internal.socket.config.SocketSettings;
 import org.springframework.boot.SpringApplication;
@@ -19,7 +20,7 @@ public class KafkaTrainingApplication {
 
     // By default, this bean will be a Singleton, as we wanted to
     @Bean(initMethod = "start")
-    public ServerSocketImpl socketServer(SocketSettings settings) throws IOException {
-        return new ServerSocketImpl(settings);
+    public ServerSocketImpl socketServer(SocketSettings settings,  DataProcessor dataProcessor) throws IOException {
+        return new ServerSocketImpl(settings, dataProcessor);
     }
 }
