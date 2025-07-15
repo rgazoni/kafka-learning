@@ -64,12 +64,11 @@ public class ServerSocketImpl extends ServerSocket implements io.spring.training
 
                     HeaderModel h = new DataProcessor().parseInputData(dis);
 
-                    int correlationId = h.correlationId();
-
                     byte[] buf = ByteBuffer
-                            .allocate(4)
+                            .allocate(8)
                             .order(ByteOrder.BIG_ENDIAN)    // network order
-                            .putInt(correlationId)
+                            .putInt(h.messageSize())
+                            .putInt(h.correlationId())
                             .array();
 
                     try (BufferedOutputStream out = new BufferedOutputStream(clientSocket.getOutputStream())) {

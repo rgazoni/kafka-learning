@@ -19,11 +19,23 @@ public class Header {
     private int messageSize;
     // 32-bit signed
     private int correlationId;
+    // 16-bit signed
+    private short requestApiKey;
+    // 16-bit signed
+    private short requestApiVersion;
+    // Nullable-string
+    private String clientId;
+    // Compact-array
+    private String[] TAG_ARRAY;
 
     public Header(DataInputStream raw) {
         this.raw = raw;
         this.messageSize = 0;
         this.correlationId = 0;
+        this.clientId = "";
+        this.requestApiKey = 0;
+        this.requestApiVersion = 0;
+        this.TAG_ARRAY = new String[]{};
     }
 
     /**
@@ -40,14 +52,21 @@ public class Header {
 
             // Accessing message size
             messageSize = this.raw.readInt();
-            logger.info("message size content is of {}", messageSize);
+            logger.info("message_size content is of {}", messageSize);
 
+            requestApiKey = this.raw.readShort();
+            logger.info("request_api_key is of {}", requestApiKey);
+
+            requestApiVersion = this.raw.readShort();
+            logger.info("request_api_version is of {}", requestApiVersion);
 
             correlationId = this.raw.readInt();
-            logger.info("correlation id content is of {}", correlationId);
+            logger.info("correlation_id content is of {}", correlationId);
 
             return HeaderModel.builder()
                     .messageSize(messageSize)
+                    .requestApiKey(requestApiKey)
+                    .requestApiVersion(requestApiVersion)
                     .correlationId(correlationId)
                     .build();
 
@@ -55,8 +74,4 @@ public class Header {
             throw new RuntimeException(e);
         }
     }
-
-//    private <T> T getField() {
-//
-//    }
 }

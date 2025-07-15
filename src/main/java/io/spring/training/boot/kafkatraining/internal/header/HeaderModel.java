@@ -5,6 +5,9 @@ import lombok.Builder;
 @Builder
 public record HeaderModel(
         int messageSize,
-        int correlationId
-) {
-}
+        short requestApiKey,
+        short requestApiVersion,
+        int correlationId,
+        String clientId,
+        String[] TAG_ARRAY
+) {}
