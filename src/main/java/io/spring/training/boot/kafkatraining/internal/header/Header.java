@@ -1,5 +1,7 @@
 package io.spring.training.boot.kafkatraining.internal.header;
 
+import io.spring.training.boot.kafkatraining.internal.protocolError.ProtocolError;
+import io.spring.training.boot.kafkatraining.internal.protocolError.ProtocolException;
 import lombok.AccessLevel;
 import lombok.Getter;
 import org.slf4j.Logger;
@@ -78,7 +80,8 @@ public class Header {
                     .build();
 
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            logger.error("I/O error handling client connection", e);
+            throw new ProtocolException(ProtocolError.UNKNOWN_SERVER_ERROR);
         }
     }
 }

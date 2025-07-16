@@ -1,11 +1,10 @@
 package io.spring.training.boot.kafkatraining.internal;
 
-import io.spring.training.boot.kafkatraining.internal.apiKeys.ApiRedirectorService;
-import io.spring.training.boot.kafkatraining.internal.apiKeys.produce.ProducerManager;
-import io.spring.training.boot.kafkatraining.internal.apiKeys.produce.v4.ProduceRequest;
-import io.spring.training.boot.kafkatraining.internal.apiKeys.produce.v4.ProduceRequestImpl;
+import io.spring.training.boot.kafkatraining.apiKeys.ApiRedirectorService;
 import io.spring.training.boot.kafkatraining.internal.header.Header;
 import io.spring.training.boot.kafkatraining.internal.header.HeaderModel;
+import io.spring.training.boot.kafkatraining.internal.protocolError.ProtocolError;
+import io.spring.training.boot.kafkatraining.internal.protocolError.ProtocolException;
 import lombok.AccessLevel;
 import lombok.Getter;
 import org.slf4j.Logger;
@@ -29,16 +28,16 @@ public class DataProcessor {
     }
 
     public HeaderModel parseInputData(DataInputStream raw) {
-        // Assign data coming from a client
         this.dataInputStream = raw;
 
         HeaderModel hm = Header.getInstance().parse(dataInputStream);
+
         byte[] body = new byte[4];
         try {
             dataInputStream.readFully(body);
         } catch (IOException e) {
-            // TODO see this err
-            throw new RuntimeException(e);
+            logger.error("I/O error handling client connection", e);
+            throw new ProtocolException(ProtocolError.UNKNOWN_SERVER_ERROR);
         }
 
         this.apiRedirectorService.redirect(hm, body);

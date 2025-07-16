@@ -1,7 +1,7 @@
-package io.spring.training.boot.kafkatraining.internal.apiKeys.produce;
+package io.spring.training.boot.kafkatraining.apiKeys.produce;
 
-import io.spring.training.boot.kafkatraining.internal.apiKeys.RequestApiRedirector;
-import io.spring.training.boot.kafkatraining.internal.apiKeys.produce.v4.ProduceRequestImpl;
+import io.spring.training.boot.kafkatraining.apiKeys.RequestApiRedirector;
+import io.spring.training.boot.kafkatraining.apiKeys.produce.v4.ProduceRequestImpl;
 import io.spring.training.boot.kafkatraining.internal.header.HeaderModel;
 import org.springframework.stereotype.Component;
 

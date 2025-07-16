@@ -1,6 +1,6 @@
-package io.spring.training.boot.kafkatraining.internal.apiKeys.produce.v4;
+package io.spring.training.boot.kafkatraining.apiKeys.produce.v4;
 
-import io.spring.training.boot.kafkatraining.internal.apiKeys.produce.AbstractProducer;
+import io.spring.training.boot.kafkatraining.apiKeys.produce.AbstractProducer;
 
 public class ProduceRequestImpl extends AbstractProducer implements ProduceRequest {
 

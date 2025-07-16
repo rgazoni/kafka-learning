@@ -1,6 +1,8 @@
-package io.spring.training.boot.kafkatraining.internal.apiKeys;
+package io.spring.training.boot.kafkatraining.apiKeys;
 
 import io.spring.training.boot.kafkatraining.internal.header.HeaderModel;
+import io.spring.training.boot.kafkatraining.internal.protocolError.ProtocolError;
+import io.spring.training.boot.kafkatraining.internal.protocolError.ProtocolException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -15,17 +17,14 @@ public class ApiRedirectorService {
 
     @Autowired
     public ApiRedirectorService(List<RequestApiRedirector> handlerList) {
-        // build a map version -> handler
         this.handlers = handlerList.stream()
                 .collect(Collectors.toMap(RequestApiRedirector::getVersion, Function.identity()));
     }
 
     public void redirect(HeaderModel hm, byte[] body) {
-        RequestApiRedirector handler =
-                handlers.get(hm.requestApiKey());
+        RequestApiRedirector handler = handlers.get(hm.requestApiKey());
         if (handler == null) {
-            // TODO understand err
-            throw new RuntimeException("");
+            throw new ProtocolException(ProtocolError.INVALID_REQUEST);
         }
         handler.redirectToVersion(hm, body);
     }

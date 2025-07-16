@@ -1,4 +1,4 @@
-package io.spring.training.boot.kafkatraining.internal.apiKeys.produce;
+package io.spring.training.boot.kafkatraining.apiKeys.produce;
 
 import lombok.Getter;
 

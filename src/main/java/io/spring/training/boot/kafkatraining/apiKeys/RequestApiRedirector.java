@@ -1,4 +1,4 @@
-package io.spring.training.boot.kafkatraining.internal.apiKeys;
+package io.spring.training.boot.kafkatraining.apiKeys;
 
 import io.spring.training.boot.kafkatraining.internal.header.HeaderModel;
 

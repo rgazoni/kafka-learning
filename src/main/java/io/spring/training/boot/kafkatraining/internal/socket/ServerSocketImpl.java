@@ -2,8 +2,12 @@ package io.spring.training.boot.kafkatraining.internal.socket;
 
 import io.spring.training.boot.kafkatraining.internal.DataProcessor;
 import io.spring.training.boot.kafkatraining.internal.header.HeaderModel;
+import io.spring.training.boot.kafkatraining.internal.protocolError.ProtocolError;
+import io.spring.training.boot.kafkatraining.internal.protocolError.ProtocolException;
 import io.spring.training.boot.kafkatraining.internal.socket.config.SocketSettings;
 import io.spring.training.boot.kafkatraining.internal.utils.ByteConverter;
+import lombok.AccessLevel;
+import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -12,15 +16,17 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.Optional;
 
 // His bean definition is presented on Main Config File: KafkaTrainingApplication
 public class ServerSocketImpl extends ServerSocket implements io.spring.training.boot.kafkatraining.internal.socket.ServerSocket {
     private static final Logger logger = LoggerFactory.getLogger(ServerSocketImpl.class);
     private final SocketSettings settings;
-    private Socket clientSocket = null;
-    private ServerSocket serverSocket = null;
-
     private final DataProcessor dataProcessor;
+    private Socket clientSocket = null;
+
+    @Getter
+    private ServerSocket serverSocket = null;
 
     public ServerSocketImpl(SocketSettings settings, DataProcessor dataProcessor) throws IOException {
         this.settings = settings;
@@ -40,27 +46,16 @@ public class ServerSocketImpl extends ServerSocket implements io.spring.training
 
         } catch (IOException e) {
             logger.error("IOException on socket creation: {}", e.getMessage());
-        } finally {
-            try {
-                if (clientSocket != null) {
-                    logger.info("closing socket");
-                    clientSocket.close();
-                }
-            } catch (IOException e) {
-                logger.error("IOException on closing socket: {}", e.getMessage());
-            }
         }
     }
 
     public void acceptClientConn() {
         Thread thread = new Thread(() -> {
-            boolean running = true;
             logger.debug("server socket is now accepting connection from clients");
-            while (running && !serverSocket.isClosed()) {
-                try (
-                        Socket clientSocket = serverSocket.accept();
-                        DataInputStream dis = new DataInputStream(clientSocket.getInputStream())
-                ) {
+            while (!serverSocket.isClosed()) {
+                try {
+                    clientSocket = serverSocket.accept();
+                    DataInputStream dis = new DataInputStream(clientSocket.getInputStream());
                     logger.info("a client connected to socket with addr:port {}", clientSocket.getRemoteSocketAddress());
                     logger.info("client {} sent a message with buffer size of {} Kbs",
                             clientSocket.getRemoteSocketAddress(),
@@ -70,7 +65,7 @@ public class ServerSocketImpl extends ServerSocket implements io.spring.training
 
                     byte[] buf = ByteBuffer
                             .allocate(24)
-                            .order(ByteOrder.BIG_ENDIAN)    // network order
+                            .order(ByteOrder.BIG_ENDIAN)
                             .putInt(h.messageSize())
                             .putInt(h.correlationId())
                             .array();
@@ -79,13 +74,44 @@ public class ServerSocketImpl extends ServerSocket implements io.spring.training
                         out.write(buf);
                     }
 
-                } catch (IOException e) {
-                    if (running) {
+                } catch (IOException | ProtocolException e) {
+                    ProtocolException p;
+                    if (e.getClass().equals(IOException.class)) {
                         logger.error("I/O error handling client connection", e);
+                        p = new ProtocolException(ProtocolError.UNKNOWN_SERVER_ERROR);
+                    } else {
+                        assert e instanceof ProtocolException;
+                        p = (ProtocolException) e;
+                    }
+                    logger.error("protocol name error {}, with code {} and description: {}",
+                            p.getErrorName(), p.getErrorCode(), p.getErrorDescription());
+                    if (clientSocket != null) {
+                        sendErrorCode(clientSocket, p.getErrorCode());
+                    }
+                } finally {
+                    if (clientSocket != null) {
+                        try {
+                            clientSocket.close();
+                        } catch (IOException e) {
+                            logger.warn("Error closing client socket", e);
+                        }
                     }
                 }
             }
         }, "SocketServer-Thread");
         thread.start();
+    }
+
+    private void sendErrorCode(Socket client, short code) {
+        byte[] buf = ByteBuffer
+                .allocate(2)
+                .order(ByteOrder.BIG_ENDIAN)
+                .putShort(code)
+                .array();
+        try (var out = new BufferedOutputStream(client.getOutputStream())) {
+            out.write(buf);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
     }
 }
