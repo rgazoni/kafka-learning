@@ -15,7 +15,6 @@ import java.io.DataInputStream;
 @SpringBootTest
 public class HeaderTests {
 
-
     // echo -ne '\x00\x00\x00\x04\x00\x00\x00\x07\x00\x17\x00\x02\x00\x08\x00\x0A' | nc 127.0.0.1 9092 | hexdump -C
     @Test
     public void parsingHeader() {

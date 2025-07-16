@@ -69,7 +69,7 @@ public class ServerSocketImpl extends ServerSocket implements io.spring.training
                     HeaderModel h = this.dataProcessor.parseInputData(dis);
 
                     byte[] buf = ByteBuffer
-                            .allocate(8)
+                            .allocate(24)
                             .order(ByteOrder.BIG_ENDIAN)    // network order
                             .putInt(h.messageSize())
                             .putInt(h.correlationId())

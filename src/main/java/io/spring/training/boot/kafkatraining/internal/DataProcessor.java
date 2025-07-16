@@ -33,9 +33,9 @@ public class DataProcessor {
         this.dataInputStream = raw;
 
         HeaderModel hm = Header.getInstance().parse(dataInputStream);
-        byte[] body;
+        byte[] body = new byte[4];
         try {
-            body = raw.readAllBytes();
+            dataInputStream.readFully(body);
         } catch (IOException e) {
             // TODO see this err
             throw new RuntimeException(e);
