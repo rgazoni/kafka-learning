@@ -12,13 +12,13 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
-public class ApiRedirectorService {
+public class ApiKeyRedirectorService {
     private final Map<Short, RequestApiRedirector> handlers;
 
     @Autowired
-    public ApiRedirectorService(List<RequestApiRedirector> handlerList) {
+    public ApiKeyRedirectorService(List<RequestApiRedirector> handlerList) {
         this.handlers = handlerList.stream()
-                .collect(Collectors.toMap(RequestApiRedirector::getVersion, Function.identity()));
+                .collect(Collectors.toMap(RequestApiRedirector::getResourceApiKey, Function.identity()));
     }
 
     public void redirect(HeaderModel hm, byte[] body) {

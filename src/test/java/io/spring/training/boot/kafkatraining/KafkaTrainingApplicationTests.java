@@ -14,6 +14,8 @@ import java.nio.ByteBuffer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+// TODO insert a malfunction data stream into data processor
+
 @SpringBootTest
 class KafkaTrainingApplicationTests {
     private static final Logger logger = LoggerFactory.getLogger(KafkaTrainingApplicationTests.class);
