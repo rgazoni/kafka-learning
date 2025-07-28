@@ -3,7 +3,6 @@ package io.spring.training.boot.kafkatraining.apiKeys;
 import io.spring.training.boot.kafkatraining.internal.header.HeaderModel;
 import io.spring.training.boot.kafkatraining.internal.protocolError.ProtocolError;
 import io.spring.training.boot.kafkatraining.internal.protocolError.ProtocolException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -15,7 +14,6 @@ import java.util.stream.Collectors;
 public class ApiKeyRedirectorService {
     private final Map<Short, RequestApiRedirector> handlers;
 
-    @Autowired
     public ApiKeyRedirectorService(List<RequestApiRedirector> handlerList) {
         this.handlers = handlerList.stream()
                 .collect(Collectors.toMap(RequestApiRedirector::getResourceApiKey, Function.identity()));

@@ -1,0 +1,1 @@
+![kafka_server.svg](src/main/resources/documentation/kafka_server.svg)
