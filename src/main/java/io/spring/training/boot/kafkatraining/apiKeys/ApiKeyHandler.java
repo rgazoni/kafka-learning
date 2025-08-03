@@ -11,16 +11,16 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
-public class ApiKeyRedirectorService {
-    private final Map<Short, RequestApiRedirector> handlers;
+public class ApiKeyHandler {
+    private final Map<Short, RequestType> handlers;
 
-    public ApiKeyRedirectorService(List<RequestApiRedirector> handlerList) {
+    public ApiKeyHandler(List<RequestType> handlerList) {
         this.handlers = handlerList.stream()
-                .collect(Collectors.toMap(RequestApiRedirector::getResourceApiKey, Function.identity()));
+                .collect(Collectors.toMap(RequestType::getApiKey, Function.identity()));
     }
 
     public void redirect(HeaderModel hm, byte[] body) {
-        RequestApiRedirector handler = handlers.get(hm.requestApiKey());
+        RequestType handler = handlers.get(hm.requestApiKey());
         if (handler == null) {
             throw new ProtocolException(ProtocolError.INVALID_REQUEST);
         }

@@ -1,6 +1,7 @@
 package io.spring.training.boot.kafkatraining.internal.protocolError;
 
 public enum ProtocolError {
+    NONE((short)0),
     UNSUPPORTED_VERSION((short)35),
     UNKNOWN_SERVER_ERROR((short)-1),
     INVALID_REQUEST((short) 42)

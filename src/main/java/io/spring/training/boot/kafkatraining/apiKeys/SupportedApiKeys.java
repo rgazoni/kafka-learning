@@ -14,6 +14,6 @@ public enum SupportedApiKeys {
     }
 
     public short getApiKey() {
-        return (short) 5;
+        return this.keyOrdinal;
     }
 }

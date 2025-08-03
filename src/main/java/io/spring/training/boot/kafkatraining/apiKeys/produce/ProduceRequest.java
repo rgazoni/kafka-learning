@@ -1,7 +1,5 @@
 package io.spring.training.boot.kafkatraining.apiKeys.produce;
 
-import io.spring.training.boot.kafkatraining.internal.header.HeaderModel;
+import io.spring.training.boot.kafkatraining.apiKeys.MinimalContractForRequest;
 
-public interface ProduceRequest {
-    void execute(HeaderModel hm, byte[] body);
-}
+public interface ProduceRequest extends MinimalContractForRequest {}

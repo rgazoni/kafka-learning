@@ -1,6 +1,6 @@
 package io.spring.training.boot.kafkatraining.internal;
 
-import io.spring.training.boot.kafkatraining.apiKeys.ApiKeyRedirectorService;
+import io.spring.training.boot.kafkatraining.apiKeys.ApiKeyHandler;
 import io.spring.training.boot.kafkatraining.internal.header.Header;
 import io.spring.training.boot.kafkatraining.internal.header.HeaderModel;
 import io.spring.training.boot.kafkatraining.internal.protocolError.ProtocolError;
@@ -21,9 +21,9 @@ public class DataProcessor {
     private static final Logger logger = LoggerFactory.getLogger(DataProcessor.class);
     private DataInputStream dataInputStream = null;
 
-    private final ApiKeyRedirectorService apiRedirectorService;
+    private final ApiKeyHandler apiRedirectorService;
 
-    public DataProcessor(ApiKeyRedirectorService apiRedirectorService) {
+    public DataProcessor(ApiKeyHandler apiRedirectorService) {
         this.apiRedirectorService = apiRedirectorService;
     }
 
