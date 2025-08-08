@@ -1,6 +1,6 @@
 package io.spring.training.boot.kafkatraining;
 
-import io.spring.training.boot.kafkatraining.internal.protocolError.ProtocolError;
+import io.spring.training.boot.kafkatraining.internal.protocol.error.ProtocolError;
 import org.junit.jupiter.api.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -100,7 +100,7 @@ class KafkaTrainingApplicationTests {
 
         byte[] buf = ByteBuffer.allocate(4 + 2 + 2 + 4 + body.length)
                 .putInt(messageSize)        // size
-                .putShort((short) 10)       // set a api key that does not exists
+                .putShort((short) 10)       // set an api key that does not exist
                 .putShort((short) 0)        // apiVersion
                 .putInt(7)           // correlationId
                 .put(body)
@@ -120,6 +120,51 @@ class KafkaTrainingApplicationTests {
 
         } catch (IOException e) {
             logger.error("test error for sending or reading a message to local server on port 9092. e: {}", e.getMessage());
+        } finally {
+            out.close();
+        }
+
+    }
+
+    @Test
+    void sendNotSupportedApiVersion() throws IOException {
+        // EXPECTED ERROR RESPONSE
+        // Message Size
+        // Correlation id
+        // ERROR_CODE
+        //      UNSUPPORTED_VERSION
+
+        byte[] body = {
+                0x00, 0x17,
+                0x00, 0x02,
+                0x00, 0x08,
+                0x00, 0x0A
+        };
+
+        int messageSize = body.length;  // 8
+
+        byte[] buf = ByteBuffer.allocate(4 + 2 + 2 + 4 + body.length)
+                .putInt(messageSize)        // size
+                .putShort((short) 18)       // set produce api key
+                .putShort((short) 55)        // apiVersion unavailable
+                .putInt(7)           // correlationId
+                .put(body)
+                .array();
+
+        int response;
+        try {
+            out.write(buf);
+            out.flush();
+
+            // ignores message size and correlation id
+            in.readFully(new byte[4 + 4]);
+
+            response = in.readShort();
+
+            assertEquals(ProtocolError.UNSUPPORTED_VERSION.code(), response, "Mismatch error response and expected");
+
+        } catch (IOException e) {
+            logger.error("test error for sending or reading a message to local server on port 9092. e: {}", e.getCause());
         } finally {
             out.close();
         }

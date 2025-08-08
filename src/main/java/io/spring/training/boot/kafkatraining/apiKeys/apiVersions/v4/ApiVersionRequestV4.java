@@ -3,7 +3,7 @@ package io.spring.training.boot.kafkatraining.apiKeys.apiVersions.v4;
 import io.spring.training.boot.kafkatraining.apiKeys.Versionable;
 import io.spring.training.boot.kafkatraining.apiKeys.apiVersions.ApiVersionsRequest;
 import io.spring.training.boot.kafkatraining.internal.header.HeaderModel;
-import io.spring.training.boot.kafkatraining.internal.protocolError.ProtocolError;
+import io.spring.training.boot.kafkatraining.internal.protocol.error.ProtocolError;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -37,6 +37,8 @@ public class ApiVersionRequestV4 implements ApiVersionsRequest {
         //    min_version => INT16
         //    max_version => INT16
         //  throttle_time_ms => INT32
+
+
 
         int corrId = hm.correlationId();
         int errorCode = ProtocolError.NONE.code();

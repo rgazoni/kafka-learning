@@ -1,8 +1,8 @@
 package io.spring.training.boot.kafkatraining.apiKeys;
 
 import io.spring.training.boot.kafkatraining.internal.header.HeaderModel;
-import io.spring.training.boot.kafkatraining.internal.protocolError.ProtocolError;
-import io.spring.training.boot.kafkatraining.internal.protocolError.ProtocolException;
+import io.spring.training.boot.kafkatraining.internal.protocol.error.ProtocolError;
+import io.spring.training.boot.kafkatraining.internal.protocol.error.ProtocolException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

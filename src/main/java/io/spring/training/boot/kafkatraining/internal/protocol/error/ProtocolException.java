@@ -1,6 +1,4 @@
-package io.spring.training.boot.kafkatraining.internal.protocolError;
-
-import java.io.IOException;
+package io.spring.training.boot.kafkatraining.internal.protocol.error;
 
 public class ProtocolException extends RuntimeException {
     private final ProtocolError error;

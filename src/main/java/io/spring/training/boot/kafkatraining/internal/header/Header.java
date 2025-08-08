@@ -1,12 +1,11 @@
 package io.spring.training.boot.kafkatraining.internal.header;
 
-import io.spring.training.boot.kafkatraining.internal.protocolError.ProtocolError;
-import io.spring.training.boot.kafkatraining.internal.protocolError.ProtocolException;
+import io.spring.training.boot.kafkatraining.internal.protocol.error.ProtocolError;
+import io.spring.training.boot.kafkatraining.internal.protocol.error.ProtocolException;
 import lombok.AccessLevel;
 import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Service;
 
 import java.io.DataInputStream;
 import java.io.IOException;

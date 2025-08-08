@@ -1,4 +1,4 @@
-package io.spring.training.boot.kafkatraining.internal.protocolError;
+package io.spring.training.boot.kafkatraining.internal.protocol.error;
 
 public enum ProtocolError {
     NONE((short)0),

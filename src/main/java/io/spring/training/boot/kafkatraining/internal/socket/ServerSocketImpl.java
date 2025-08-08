@@ -2,11 +2,11 @@ package io.spring.training.boot.kafkatraining.internal.socket;
 
 import io.spring.training.boot.kafkatraining.internal.DataProcessor;
 import io.spring.training.boot.kafkatraining.internal.header.HeaderModel;
-import io.spring.training.boot.kafkatraining.internal.protocolError.ProtocolError;
-import io.spring.training.boot.kafkatraining.internal.protocolError.ProtocolException;
+import io.spring.training.boot.kafkatraining.internal.protocol.error.ProtocolError;
+import io.spring.training.boot.kafkatraining.internal.protocol.error.ProtocolException;
+import io.spring.training.boot.kafkatraining.internal.protocol.error.ProtocolFieldSizes;
 import io.spring.training.boot.kafkatraining.internal.socket.config.SocketSettings;
 import io.spring.training.boot.kafkatraining.internal.utils.ByteConverter;
-import lombok.AccessLevel;
 import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,7 +16,6 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.util.Optional;
 
 // His bean definition is presented on Main Config File: KafkaTrainingApplication
 public class ServerSocketImpl extends ServerSocket implements io.spring.training.boot.kafkatraining.internal.socket.ServerSocket {
@@ -104,8 +103,12 @@ public class ServerSocketImpl extends ServerSocket implements io.spring.training
 
     private void sendErrorCode(Socket client, short code) {
         byte[] buf = ByteBuffer
-                .allocate(2)
+                .allocate(ProtocolFieldSizes.HEADER_MESSAGE_SIZE_BYTES +
+                                ProtocolFieldSizes.HEADER_CORRELATION_ID_BYTES +
+                                ProtocolFieldSizes.ERROR_CODE_BYTES)
                 .order(ByteOrder.BIG_ENDIAN)
+                .putInt(Integer.MAX_VALUE) //junk
+                .putInt(Integer.MAX_VALUE) //junk
                 .putShort(code)
                 .array();
         try (var out = new BufferedOutputStream(client.getOutputStream())) {
