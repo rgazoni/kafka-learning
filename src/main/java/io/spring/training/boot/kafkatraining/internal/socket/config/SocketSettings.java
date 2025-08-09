@@ -1,6 +1,7 @@
 package io.spring.training.boot.kafkatraining.internal.socket.config;
 
 import jakarta.annotation.PostConstruct;
+import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,20 +12,13 @@ import org.springframework.core.env.Environment;
 public class SocketSettings {
     private static final Logger log = LoggerFactory.getLogger(SocketSettings.class);
 
+    @Getter
     private int port = 9092;
     private final Environment env;
 
     @Autowired
     public SocketSettings(Environment env) {
         this.env = env;
-    }
-
-    public SocketSettings(int port) {
-        this.port = port;
-    }
-
-    public int getPort() {
-        return port;
     }
 
     @PostConstruct
