@@ -1,7 +1,5 @@
-package io.spring.training.boot.kafkatraining.internal;
+package io.spring.training.boot.kafkatraining.internal.header;
 
-import io.spring.training.boot.kafkatraining.internal.header.Header;
-import io.spring.training.boot.kafkatraining.internal.header.HeaderModel;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;

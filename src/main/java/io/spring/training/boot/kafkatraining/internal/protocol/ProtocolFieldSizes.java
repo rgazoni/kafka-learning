@@ -1,4 +1,4 @@
-package io.spring.training.boot.kafkatraining.internal.protocol.error;
+package io.spring.training.boot.kafkatraining.internal.protocol;
 
 public class ProtocolFieldSizes {
     private ProtocolFieldSizes() {}

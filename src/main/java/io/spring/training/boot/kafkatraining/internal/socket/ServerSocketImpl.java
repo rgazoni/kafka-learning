@@ -4,7 +4,7 @@ import io.spring.training.boot.kafkatraining.internal.DataProcessor;
 import io.spring.training.boot.kafkatraining.internal.header.HeaderModel;
 import io.spring.training.boot.kafkatraining.internal.protocol.error.ProtocolError;
 import io.spring.training.boot.kafkatraining.internal.protocol.error.ProtocolException;
-import io.spring.training.boot.kafkatraining.internal.protocol.error.ProtocolFieldSizes;
+import io.spring.training.boot.kafkatraining.internal.protocol.ProtocolFieldSizes;
 import io.spring.training.boot.kafkatraining.internal.socket.config.SocketSettings;
 import io.spring.training.boot.kafkatraining.internal.utils.ByteConverter;
 import lombok.Getter;

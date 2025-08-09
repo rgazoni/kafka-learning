@@ -19,6 +19,10 @@ public class SocketSettings {
         this.env = env;
     }
 
+    public SocketSettings(int port) {
+        this.port = port;
+    }
+
     public int getPort() {
         return port;
     }
