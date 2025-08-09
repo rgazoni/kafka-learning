@@ -1,7 +1,8 @@
 package io.spring.training.boot.kafkatraining.internal.socket;
 
 
-public interface ServerSocket {
-   void start();
-   void acceptClientConn();
+import org.springframework.context.SmartLifecycle;
+
+public interface ServerSocket extends SmartLifecycle {
+   void readyForClientConnections();
 }

@@ -10,102 +10,146 @@ import io.spring.training.boot.kafkatraining.internal.utils.ByteConverter;
 import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.SmartLifecycle;
 
 import java.io.*;
+import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 // His bean definition is presented on Main Config File: KafkaTrainingApplication
-public class ServerSocketImpl extends ServerSocket implements io.spring.training.boot.kafkatraining.internal.socket.ServerSocket {
+public class ServerSocketImpl implements io.spring.training.boot.kafkatraining.internal.socket.ServerSocket {
     private static final Logger logger = LoggerFactory.getLogger(ServerSocketImpl.class);
+
     private final SocketSettings settings;
     private final DataProcessor dataProcessor;
-    private Socket clientSocket = null;
+
+    private Thread readyThread;
 
     @Getter
     private ServerSocket serverSocket = null;
+
+    private final AtomicBoolean running = new AtomicBoolean(false);
 
     public ServerSocketImpl(SocketSettings settings, DataProcessor dataProcessor) throws IOException {
         this.settings = settings;
         this.dataProcessor = dataProcessor;
     }
 
-    public void start(){
-        logger.info("invoking start() method to init Socket system");
-        try {
-            logger.debug("creating a new serverSocket");
-            serverSocket = new ServerSocket(settings.getPort());
-            // Since the tester restarts your program quite often, setting SO_REUSEADDR
-            // ensures that we don't run into 'Address already in use' errors
-            serverSocket.setReuseAddress(true);
+    @Override
+    public void start() {
+        if (running.compareAndSet(false, true)) {
+            logger.info("invoking start() method to init Socket system");
+            try {
+                logger.debug("creating a new serverSocket on port {}", settings.getPort());
+                serverSocket = new ServerSocket();
+                // Since the tester restarts your program quite often, setting SO_REUSEADDR
+                // ensures that we don't run into 'Address already in use' errors
+                serverSocket.setReuseAddress(true);
+                serverSocket.bind(new InetSocketAddress(settings.getPort()));
 
-            acceptClientConn();
+                logger.debug("creating Thread for accepting connections from clients");
+                readyThread = new Thread(this::readyForClientConnections, "SocketServer-Thread");
+                readyThread.start();
 
-        } catch (IOException e) {
-            logger.error("IOException on socket creation: {}", e.getMessage());
+                logger.info("server socket is ready and accepting connections");
+            } catch (IOException e) {
+                throw new RuntimeException("failed to start server", e);
+            }
         }
     }
 
-    public void acceptClientConn() {
-        Thread thread = new Thread(() -> {
-            logger.debug("server socket is now accepting connection from clients");
-            while (!serverSocket.isClosed()) {
+    @Override
+    public void stop() {
+        if (running.compareAndSet(true, false)) {
+            try {
+                serverSocket.close();
+                readyThread.join(500);
+            } catch (InterruptedException | IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+    }
+
+    @Override
+    public boolean isRunning() {
+        return running.get();
+    }
+
+    @Override
+    public boolean isAutoStartup() {
+        return true;
+    }
+
+    @Override
+    public void stop(Runnable callback) {
+        stop();
+        // this is merely for shutdown lifecycle purposes
+        callback.run();
+    }
+
+    @Override
+    // this also handles lifecycle purposes, if it has a greater number
+    // it will start later, otherwise earlier
+    public int getPhase() {
+        return 0;
+    }
+
+    public void readyForClientConnections() {
+
+        while (running.get()) {
+
+            try (Socket client = serverSocket.accept()) {
+                DataInputStream in = new DataInputStream(client.getInputStream());
+                BufferedOutputStream out = new BufferedOutputStream(client.getOutputStream());
+
                 try {
-                    clientSocket = serverSocket.accept();
-                    DataInputStream dis = new DataInputStream(clientSocket.getInputStream());
-                    logger.info("a client connected to socket with addr:port {}", clientSocket.getRemoteSocketAddress());
+                    logger.info("a client connected to socket with addr:port {}", client.getRemoteSocketAddress());
                     logger.info("client {} sent a message with buffer size of {} Kbs",
-                            clientSocket.getRemoteSocketAddress(),
-                            ByteConverter.toMB(clientSocket.getReceiveBufferSize()));
+                            client.getRemoteSocketAddress(),
+                            ByteConverter.toMB(client.getReceiveBufferSize()));
 
-                    HeaderModel h = this.dataProcessor.parseInputData(dis);
+                    byte[] buf = handleClient(in);
 
-                    byte[] buf = ByteBuffer
-                            .allocate(24)
-                            .order(ByteOrder.BIG_ENDIAN)
-                            .putInt(h.messageSize())
-                            .putInt(h.correlationId())
-                            .array();
+                    out.write(buf);
 
-                    try (BufferedOutputStream out = new BufferedOutputStream(clientSocket.getOutputStream())) {
-                        out.write(buf);
-                    }
-
-                } catch (IOException | ProtocolException e) {
-                    ProtocolException p;
-                    if (e.getClass().equals(IOException.class)) {
-                        logger.error("I/O error handling client connection", e);
-                        p = new ProtocolException(ProtocolError.UNKNOWN_SERVER_ERROR);
-                    } else {
-                        assert e instanceof ProtocolException;
-                        p = (ProtocolException) e;
-                    }
+                } catch (ProtocolException p) {
                     logger.error("protocol name error {}, with code {} and description: {}",
                             p.getErrorName(), p.getErrorCode(), p.getErrorDescription());
-                    if (clientSocket != null) {
-                        sendErrorCode(clientSocket, p.getErrorCode());
-                    }
+
+                    sendErrorCode(client, p.getErrorCode());
+
+                } catch (IOException e) {
+                    logger.error("I/O error handling client connection", e);
+                    ProtocolException p = new ProtocolException(ProtocolError.UNKNOWN_SERVER_ERROR);
+
+                    logger.error("protocol name error {}, with code {} and description: {}",
+                            p.getErrorName(), p.getErrorCode(), p.getErrorDescription());
+
+                    sendErrorCode(client, p.getErrorCode());
+
                 } finally {
-                    if (clientSocket != null) {
-                        try {
-                            clientSocket.close();
-                        } catch (IOException e) {
-                            logger.warn("Error closing client socket", e);
-                        }
+                    try {
+                        out.flush();
+                    } catch (IOException ignore) {
+                        logger.warn("error closing client socket");
                     }
                 }
+            } catch (IOException e) {
+                logger.warn("client handling failed early", e);
             }
-        }, "SocketServer-Thread");
-        thread.start();
+        }
     }
 
     private void sendErrorCode(Socket client, short code) {
         byte[] buf = ByteBuffer
                 .allocate(ProtocolFieldSizes.HEADER_MESSAGE_SIZE_BYTES +
-                                ProtocolFieldSizes.HEADER_CORRELATION_ID_BYTES +
-                                ProtocolFieldSizes.ERROR_CODE_BYTES)
+                        ProtocolFieldSizes.HEADER_CORRELATION_ID_BYTES +
+                        ProtocolFieldSizes.ERROR_CODE_BYTES)
                 .order(ByteOrder.BIG_ENDIAN)
                 .putInt(Integer.MAX_VALUE) //junk
                 .putInt(Integer.MAX_VALUE) //junk
@@ -116,5 +160,17 @@ public class ServerSocketImpl extends ServerSocket implements io.spring.training
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
+    }
+
+    private byte[] handleClient(DataInputStream in) {
+        HeaderModel h = this.dataProcessor.parseInputData(in);
+
+        return ByteBuffer
+                .allocate(24)
+                .order(ByteOrder.BIG_ENDIAN)
+                .putInt(h.messageSize())
+                .putInt(h.correlationId())
+                .array();
+
     }
 }
