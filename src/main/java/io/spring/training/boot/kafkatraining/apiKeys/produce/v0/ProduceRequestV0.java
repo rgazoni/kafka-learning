@@ -6,7 +6,7 @@ import lombok.NoArgsConstructor;
 
 @NoArgsConstructor
 public class ProduceRequestV0 implements ProduceRequest {
-    private final short PRODUCE_REQUEST_VERSION = 0;
+    public static final short VERSION = 0;
 
     public void execute(HeaderModel hm, byte[] body) {
         System.out.println("Hello World!");
@@ -14,6 +14,6 @@ public class ProduceRequestV0 implements ProduceRequest {
 
     @Override
     public short getVersion() {
-        return PRODUCE_REQUEST_VERSION;
+        return VERSION;
     }
 }
